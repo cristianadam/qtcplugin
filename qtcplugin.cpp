@@ -1,79 +1,88 @@
-#include "qtcplugin.h"
 #include "qtcpluginconstants.h"
+#include "qtcplugintr.h"
 
-#include <coreplugin/icore.h>
-#include <coreplugin/icontext.h>
+#include <coreplugin/actionmanager/actioncontainer.h>
 #include <coreplugin/actionmanager/actionmanager.h>
 #include <coreplugin/actionmanager/command.h>
-#include <coreplugin/actionmanager/actioncontainer.h>
 #include <coreplugin/coreconstants.h>
+#include <coreplugin/icontext.h>
+#include <coreplugin/icore.h>
+
+#include <extensionsystem/iplugin.h>
 
 #include <QAction>
-#include <QMessageBox>
 #include <QMainWindow>
 #include <QMenu>
+#include <QMessageBox>
 
-namespace Qtcplugin {
-namespace Internal {
+namespace Qtcplugin::Internal {
 
-QtcpluginPlugin::QtcpluginPlugin()
+class QtcpluginPlugin : public ExtensionSystem::IPlugin
 {
-    // Create your members
-}
+    Q_OBJECT
+    Q_PLUGIN_METADATA(IID "org.qt-project.Qt.QtCreatorPlugin" FILE "Qtcplugin.json")
 
-QtcpluginPlugin::~QtcpluginPlugin()
-{
-    // Unregister objects from the plugin manager's object pool
-    // Delete members
-}
+public:
+    QtcpluginPlugin()
+    {
+        // Create your members
+    }
 
-bool QtcpluginPlugin::initialize(const QStringList &arguments, QString *errorString)
-{
-    // Register objects in the plugin manager's object pool
-    // Load settings
-    // Add actions to menus
-    // Connect to other plugins' signals
-    // In the initialize function, a plugin can be sure that the plugins it
-    // depends on have initialized their members.
+    ~QtcpluginPlugin() final
+    {
+        // Unregister objects from the plugin manager's object pool
+        // Delete members
+    }
 
-    Q_UNUSED(arguments)
-    Q_UNUSED(errorString)
+    void initialize() final
+    {
+        // Register objects in the plugin manager's object pool
+        // Load settings
+        // Add actions to menus
+        // Connect to other plugins' signals
+        // In the initialize function, a plugin can be sure that the plugins it
+        // depends on have initialized their members.
 
-    auto action = new QAction(tr("Qtcplugin Action"), this);
-    Core::Command *cmd = Core::ActionManager::registerAction(action, Constants::ACTION_ID,
-                                                             Core::Context(Core::Constants::C_GLOBAL));
-    cmd->setDefaultKeySequence(QKeySequence(tr("Ctrl+Alt+Meta+A")));
-    connect(action, &QAction::triggered, this, &QtcpluginPlugin::triggerAction);
+        // If you need access to command line arguments or to report errors, use the
+        //    bool IPlugin::initialize(const QStringList &arguments, QString *errorString)
+        // overload.
 
-    Core::ActionContainer *menu = Core::ActionManager::createMenu(Constants::MENU_ID);
-    menu->menu()->setTitle(tr("Qtcplugin"));
-    menu->addAction(cmd);
-    Core::ActionManager::actionContainer(Core::Constants::M_TOOLS)->addMenu(menu);
+        auto action = new QAction(Tr::tr("Qtcplugin Action"), this);
+        Core::Command *cmd = Core::ActionManager::registerAction(
+                    action, Constants::ACTION_ID, Core::Context(Core::Constants::C_GLOBAL));
+        cmd->setDefaultKeySequence(QKeySequence(Tr::tr("Ctrl+Alt+Meta+A")));
+        connect(action, &QAction::triggered, this, &QtcpluginPlugin::triggerAction);
 
-    return true;
-}
+        Core::ActionContainer *menu = Core::ActionManager::createMenu(Constants::MENU_ID);
+        menu->menu()->setTitle(Tr::tr("Qtcplugin"));
+        menu->addAction(cmd);
+        Core::ActionManager::actionContainer(Core::Constants::M_TOOLS)->addMenu(menu);
+    }
 
-void QtcpluginPlugin::extensionsInitialized()
-{
-    // Retrieve objects from the plugin manager's object pool
-    // In the extensionsInitialized function, a plugin can be sure that all
-    // plugins that depend on it are completely initialized.
-}
+    void extensionsInitialized() final
+    {
+        // Retrieve objects from the plugin manager's object pool
+        // In the extensionsInitialized function, a plugin can be sure that all
+        // plugins that depend on it are completely initialized.
+    }
 
-ExtensionSystem::IPlugin::ShutdownFlag QtcpluginPlugin::aboutToShutdown()
-{
-    // Save settings
-    // Disconnect from signals that are not needed during shutdown
-    // Hide UI (if you add UI that is not in the main window directly)
-    return SynchronousShutdown;
-}
+    ShutdownFlag aboutToShutdown() final
+    {
+        // Save settings
+        // Disconnect from signals that are not needed during shutdown
+        // Hide UI (if you add UI that is not in the main window directly)
+        return SynchronousShutdown;
+    }
 
-void QtcpluginPlugin::triggerAction()
-{
-    QMessageBox::information(Core::ICore::mainWindow(),
-                             tr("Action Triggered"),
-                             tr("This is an action from Qtcplugin."));
-}
+private:
+    void triggerAction()
+    {
+        QMessageBox::information(Core::ICore::mainWindow(),
+                                 Tr::tr("Action Triggered"),
+                                 Tr::tr("This is an action from Qtcplugin."));
+    }
+};
 
-} // namespace Internal
-} // namespace Qtcplugin
+} // namespace Qtcplugin::Internal
+
+#include <qtcplugin.moc>
